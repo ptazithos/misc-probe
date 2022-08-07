@@ -23,7 +23,7 @@ impl eframe::App for SinglePageApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Src scenorio:");
+                ui.label("Src scenario:");
                 if ui.button("Open file…").clicked() {
                     if let Some(path) = rfd::FileDialog::new().pick_file() {
                         self.path_to_src = Some(path.display().to_string());
@@ -39,7 +39,7 @@ impl eframe::App for SinglePageApp {
             }
 
             ui.horizontal(|ui| {
-                ui.label("Dst scenorio:");
+                ui.label("Dst scenario:");
                 if ui.button("Open file…").clicked() {
                     if let Some(path) = rfd::FileDialog::new().pick_file() {
                         self.path_to_dst = Some(path.display().to_string());
