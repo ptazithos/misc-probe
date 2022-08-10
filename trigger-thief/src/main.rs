@@ -75,12 +75,12 @@ impl eframe::App for SinglePageApp {
                     self.receiver = Some(rx);
 
                     thread::spawn(move || {
-                        let src = Scenario::from_file(&path_to_src);
+                        let src = Scenario::from_file(&path_to_src).unwrap();
                         let triggers = src.versio.get_by_path("/triggers/trigger_data").try_vec();
                         let len = triggers.len();
                         tx.send(0.25).unwrap();
 
-                        let mut dst = Scenario::from_file(&path_to_dst);
+                        let mut dst = Scenario::from_file(&path_to_dst).unwrap();
                         let mut trigger_proxy = dst.triggers_proxy();
                         tx.send(0.5).unwrap();
 

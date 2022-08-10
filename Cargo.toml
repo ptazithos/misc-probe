@@ -1,3 +1,7 @@
 [workspace]
-members = ["trigger-thief"]
+resolver = "2"
 
+members = [
+    "abex-probe",
+    "trigger-thief"
+]
