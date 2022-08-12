@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = {version="0.8", features=["wayland"]}
+bevy = {version="0.8", features=["wayland","dynamic"]}
 bevy_egui = "0.15"
 egui_extras = "0.18.0"
 rfd = "0.10.0"
-aoe2-probe = "0.2.12"
+aoe2-probe = {git = "https://github.com/ptazithos/aoe2-probe", branch = "main"}
 crossbeam-channel = "0.5"

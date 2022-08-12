@@ -27,6 +27,10 @@ impl Plugin for UIPlugin {
             .add_system_set(
                 SystemSet::on_update(ScenarioState::Loaded)
                     .with_system(dialog::triggers_dialog.after(menu_bar)),
+            )
+            .add_system_set(
+                SystemSet::on_update(ScenarioState::Loaded)
+                    .with_system(dialog::trigger_dialog.after(menu_bar)),
             );
     }
 }

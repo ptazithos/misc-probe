@@ -3,16 +3,16 @@ use bevy_egui::{egui, EguiContext};
 
 pub fn setup_font(mut content: ResMut<EguiContext>) {
     let mut fonts = egui::FontDefinitions::default();
-    fonts.font_data.insert(
-        "zpix".to_owned(),
-        egui::FontData::from_static(include_bytes!("../../resource/zpix.ttf")),
-    );
+
+    let mut font = egui::FontData::from_static(include_bytes!("../../resource/zpix.ttf"));
+    font.tweak.scale = 0.85;
+    fonts.font_data.insert("zpix".to_owned(), font);
 
     fonts
         .families
         .entry(egui::FontFamily::Proportional)
         .or_default()
-        .insert(0, "zpix".to_owned());
+        .push("zpix".to_owned());
 
     fonts
         .families
