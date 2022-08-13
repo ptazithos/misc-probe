@@ -3,7 +3,7 @@ use std::{
     thread,
 };
 
-use aoe2_probe::Scenario;
+use aoe2_probe::{Scenario, TriggersTweak};
 use eframe::egui::{self, Button, ProgressBar};
 
 fn main() {
@@ -81,11 +81,11 @@ impl eframe::App for SinglePageApp {
                         tx.send(0.25).unwrap();
 
                         let mut dst = Scenario::from_file(&path_to_dst).unwrap();
-                        let mut trigger_proxy = dst.triggers_proxy();
                         tx.send(0.5).unwrap();
 
                         for (index, trigger) in triggers.iter().enumerate() {
-                            trigger_proxy.push(trigger.clone());
+                            TriggersTweak::push(&mut dst, trigger.clone()).unwrap();
+
                             tx.send(0.5 + 0.5 * (index as f64 / len as f64)).unwrap();
                         }
                         dst.to_file("./temp.aoe2scenario");

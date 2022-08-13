@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 eframe = "0.18.0"
 rfd = "0.10.0"
-aoe2-probe = "0.2.12"
+aoe2-probe = "0.2.13"
