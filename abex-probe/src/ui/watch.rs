@@ -15,8 +15,10 @@ pub fn enter_not_yet(mut ui_state: ResMut<UIState>) {
 
     config.file.show = true;
     config.file.path_to_src = None;
+    config.file.path_to_dst = None;
 
     config.triggers = false;
     config.map = false;
     config.units = false;
+    config.export = false;
 }

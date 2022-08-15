@@ -4,7 +4,7 @@ use aoe2_probe::Scenario;
 use bevy::prelude::{Commands, Res, ResMut, State};
 use crossbeam_channel::{bounded, Receiver};
 
-use crate::ui::{ScenarioState, UIState};
+use crate::ui::{LoadState, UIState};
 
 pub fn load_scenario(mut commands: Commands, ui_state: Res<UIState>) {
     if let Some(picked_path) = &ui_state.file.path_to_src {
@@ -24,17 +24,17 @@ pub fn load_scenario(mut commands: Commands, ui_state: Res<UIState>) {
 pub fn watch_scenario(
     receiver: ResMut<Receiver<Result<Scenario, String>>>,
     mut commands: Commands,
-    mut scenario_state: ResMut<State<ScenarioState>>,
+    mut scenario_state: ResMut<State<LoadState>>,
 ) {
     if !receiver.is_empty() {
         let result = receiver.recv().unwrap();
         match result {
             Ok(scenario) => {
                 commands.insert_resource(scenario);
-                scenario_state.set(ScenarioState::Loaded).unwrap();
+                scenario_state.set(LoadState::Loaded).unwrap();
             }
             Err(_) => {
-                scenario_state.set(ScenarioState::NotYet).unwrap();
+                scenario_state.set(LoadState::NotYet).unwrap();
             }
         }
     }

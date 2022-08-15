@@ -1,147 +1,40 @@
-use aoe2_probe::Scenario;
+use std::collections::HashMap;
+
+use aoe2_probe::{ConditionTweak, EffectTweak, Scenario};
 use bevy::prelude::*;
 use bevy_egui::{
-    egui::{self, Button, ProgressBar},
+    egui::{self, Label},
     EguiContext,
 };
 use egui_extras::{Size, TableBuilder};
 
-use crate::data::TriggerToken;
+use crate::data::{condition, effect, trigger};
 
-use super::{ScenarioState, UIState};
-
-pub fn file_dialog(
-    mut content: ResMut<EguiContext>,
-    mut ui_state: ResMut<UIState>,
-    mut scenario_state: ResMut<State<ScenarioState>>,
-) {
-    if ui_state.file.show {
-        egui::Window::new("File")
-            .title_bar(false)
-            .resizable(false)
-            .show(content.ctx_mut(), |ui| {
-                let is_loading = *scenario_state.current() == ScenarioState::Loading;
-                let load_button_str = if is_loading { "Loading" } else { "Load" };
-
-                ui.set_enabled(!is_loading);
-                ui.horizontal(|ui| {
-                    ui.label("Src scenario:");
-                    if ui.button("Open file…").clicked() {
-                        if let Some(path) = rfd::FileDialog::new().pick_file() {
-                            ui_state.file.path_to_src = Some(path.display().to_string());
-                        }
-                    }
-                });
-
-                if let Some(picked_path) = &ui_state.file.path_to_src {
-                    ui.horizontal(|ui| {
-                        ui.label("Picked file:");
-                        ui.monospace(picked_path);
-                    });
-
-                    ui.horizontal(|ui| {
-                        if ui
-                            .add_enabled(!is_loading, Button::new(load_button_str))
-                            .clicked()
-                        {
-                            scenario_state.set(ScenarioState::Loading).unwrap();
-                        }
-
-                        if is_loading {
-                            ui.add(ProgressBar::new(0.5));
-                        }
-                    });
-                }
-            });
-    }
-}
-
-pub fn triggers_dialog(
-    mut content: ResMut<EguiContext>,
-    ui_state: Res<UIState>,
-    scenario: Res<Scenario>,
-    mut commands: Commands,
-    mut selected_trigger: ResMut<Vec<TriggerToken>>,
-) {
-    if ui_state.triggers {
-        let listed_triggers: Vec<usize> = selected_trigger
-            .iter()
-            .map(|trigger_component| trigger_component.id)
-            .collect();
-
-        egui::Window::new("triggers-dialog")
-            .title_bar(false)
-            .resizable(false)
-            .show(content.ctx_mut(), |ui| {
-                let versio = &scenario.versio;
-
-                let trigger_version = versio.get_by_path("/triggers/trigger_version").try_f64();
-                ui.label(format!("Trigger version: {}", &trigger_version));
-
-                let number_of_triggers =
-                    versio.get_by_path("/triggers/number_of_triggers").try_u32();
-                ui.label(format!("Number of triggers: {}", &number_of_triggers));
-
-                let trigger_data = versio.get_by_path("/triggers/trigger_data").try_vec();
-                ui.label("Trigger data:");
-                TableBuilder::new(ui)
-                    .striped(true)
-                    .cell_layout(egui::Layout::left_to_right())
-                    .column(Size::initial(40.0).at_least(40.0))
-                    .column(Size::initial(180.0).at_least(180.0))
-                    .column(Size::initial(40.0).at_least(40.0))
-                    .resizable(true)
-                    .header(20.0, |mut header| {
-                        header.col(|ui| {
-                            ui.monospace("Row");
-                        });
-                        header.col(|ui| {
-                            ui.monospace("Description");
-                        });
-                        header.col(|_| {});
-                    })
-                    .body(|mut body| {
-                        for (index, trigger) in trigger_data.iter().enumerate() {
-                            let trigger = trigger.try_map();
-                            body.row(18.0, |mut row| {
-                                row.col(|ui| {
-                                    ui.monospace(index.to_string());
-                                });
-                                row.col(|ui| {
-                                    ui.monospace(trigger["trigger_name"].try_str32().content());
-                                });
-                                row.col(|ui| {
-                                    ui.set_enabled(!listed_triggers.contains(&index));
-                                    if ui.button("Edit").clicked() {
-                                        selected_trigger.push(TriggerToken {
-                                            id: index,
-                                            token: trigger.clone().into(),
-                                        });
-                                    }
-                                });
-                            })
-                        }
-                    });
-            });
-    }
-}
+use super::UIState;
 
 pub fn trigger_dialog(
     mut content: ResMut<EguiContext>,
     ui_state: Res<UIState>,
     scenario: Res<Scenario>,
-    mut selected_trigger: ResMut<Vec<TriggerToken>>,
+    mut selected_triggers: ResMut<HashMap<usize, trigger::Record>>,
+    mut selected_effects: ResMut<HashMap<(usize, usize), effect::Record>>,
+    mut selected_conditions: ResMut<HashMap<(usize, usize), condition::Record>>,
+    mut ev_unselect: EventWriter<trigger::Unselect>,
+    mut ev_write_back: EventWriter<trigger::WriteBack>,
+    mut ev_save: EventWriter<trigger::Save>,
 ) {
-    for (index, trigger_component) in selected_trigger.iter_mut().enumerate() {
+    for (&index, trigger_component) in selected_triggers.iter_mut() {
         if !ui_state.triggers {
             return;
         }
+
+        let mut apply_save_cancel_enable = true;
         egui::Window::new(format!("trigger-{}", index.to_string()))
             .title_bar(false)
             .resizable(false)
             .show(content.ctx_mut(), |ui| {
                 let trigger = &mut trigger_component.token;
-                egui::Grid::new("unique_id").show(ui, |ui| {
+                egui::Grid::new(format!("trigger-grid-{}", index.to_string())).show(ui, |ui| {
                     ui.vertical(|ui| {
                         let name = trigger.get_by_path_mut("trigger_name").try_mut_str32();
                         ui.label(name.content());
@@ -249,36 +142,63 @@ pub fn trigger_dialog(
 
                         let effect_data = trigger.get_by_path_mut("effect_data").try_mut_vec();
 
-                        ui.push_id("effects_table", |ui| {
+                        ui.push_id(format!("effect-table-{}", index.to_string()), |ui| {
                             TableBuilder::new(ui)
                                 .striped(true)
                                 .cell_layout(egui::Layout::left_to_right())
+                                .column(Size::initial(20.0).at_least(20.0))
+                                .column(Size::initial(300.0).at_least(300.0))
                                 .column(Size::initial(40.0).at_least(40.0))
-                                .column(Size::initial(180.0).at_least(180.0))
-                                .column(Size::initial(40.0).at_least(40.0))
-                                .resizable(true)
                                 .header(20.0, |mut header| {
                                     header.col(|ui| {
                                         ui.monospace("Row");
                                     });
                                     header.col(|ui| {
-                                        ui.monospace("Description");
+                                        ui.monospace("Descriptions");
                                     });
                                     header.col(|_| {});
                                 })
                                 .body(|mut body| {
-                                    for (index, effect) in effect_data.iter().enumerate() {
-                                        let effect = effect.try_map();
-                                        body.row(18.0, |mut row| {
+                                    for (effect_index, effect) in effect_data.iter().enumerate() {
+                                        let res =
+                                            EffectTweak::translate(&scenario, effect).unwrap();
+                                        let height = (((res.0.len() + res.1.len()) as f32) / 50.0)
+                                            .ceil()
+                                            * 18.0;
+
+                                        body.row(height, |mut row| {
                                             row.col(|ui| {
-                                                ui.monospace(index.to_string());
+                                                ui.monospace(effect_index.to_string());
+                                            });
+
+                                            row.col(|ui| {
+                                                ui.horizontal_top(|ui| {
+                                                    ui.horizontal_wrapped(|ui| {
+                                                        ui.label(res.0);
+                                                        ui.add(
+                                                            Label::new(
+                                                                egui::RichText::new(res.1).weak(),
+                                                            )
+                                                            .wrap(true),
+                                                        );
+                                                    });
+                                                });
                                             });
                                             row.col(|ui| {
-                                                ui.monospace(
-                                                    effect["effect_type"].try_i32().to_string(),
-                                                );
+                                                let selected = selected_effects
+                                                    .contains_key(&(index, effect_index));
+                                                apply_save_cancel_enable =
+                                                    apply_save_cancel_enable && !selected;
+                                                ui.set_enabled(!selected);
+                                                if ui.button("Edit").clicked() {
+                                                    selected_effects.insert(
+                                                        (index, effect_index),
+                                                        effect::Record {
+                                                            token: effect.clone(),
+                                                        },
+                                                    );
+                                                }
                                             });
-                                            row.col(|ui| if ui.button("Edit").clicked() {});
                                         })
                                     }
                                 });
@@ -297,14 +217,13 @@ pub fn trigger_dialog(
                         let condition_data =
                             trigger.get_by_path_mut("condition_data").try_mut_vec();
 
-                        ui.push_id("conditions_table", |ui| {
+                        ui.push_id(format!("condition-table-{}", index.to_string()), |ui| {
                             TableBuilder::new(ui)
                                 .striped(true)
                                 .cell_layout(egui::Layout::left_to_right())
+                                .column(Size::initial(20.0).at_least(20.0))
+                                .column(Size::initial(240.0).at_least(240.0))
                                 .column(Size::initial(40.0).at_least(40.0))
-                                .column(Size::initial(180.0).at_least(180.0))
-                                .column(Size::initial(40.0).at_least(40.0))
-                                .resizable(true)
                                 .header(20.0, |mut header| {
                                     header.col(|ui| {
                                         ui.monospace("Row");
@@ -315,27 +234,72 @@ pub fn trigger_dialog(
                                     header.col(|_| {});
                                 })
                                 .body(|mut body| {
-                                    for (index, condition) in condition_data.iter().enumerate() {
-                                        let condition = condition.try_map();
-                                        body.row(18.0, |mut row| {
+                                    for (condition_index, condition) in
+                                        condition_data.iter().enumerate()
+                                    {
+                                        let res = ConditionTweak::translate(&scenario, condition)
+                                            .unwrap();
+
+                                        let height = (((res.0.len() + res.1.len()) as f32) / 45.0)
+                                            .ceil()
+                                            * 18.0;
+
+                                        body.row(height, |mut row| {
                                             row.col(|ui| {
-                                                ui.monospace(index.to_string());
+                                                ui.monospace(condition_index.to_string());
+                                            });
+
+                                            row.col(|ui| {
+                                                ui.horizontal_top(|ui| {
+                                                    ui.horizontal_wrapped(|ui| {
+                                                        ui.label(res.0);
+                                                        ui.add(
+                                                            Label::new(
+                                                                egui::RichText::new(res.1).weak(),
+                                                            )
+                                                            .wrap(true),
+                                                        );
+                                                    });
+                                                });
                                             });
                                             row.col(|ui| {
-                                                ui.monospace(
-                                                    condition["condition_type"]
-                                                        .try_i32()
-                                                        .to_string(),
-                                                );
+                                                let selected = selected_conditions
+                                                    .contains_key(&(index, condition_index));
+                                                apply_save_cancel_enable =
+                                                    apply_save_cancel_enable && !selected;
+                                                ui.set_enabled(!selected);
+                                                if ui.button("Edit").clicked() {
+                                                    selected_conditions.insert(
+                                                        (index, condition_index),
+                                                        condition::Record {
+                                                            token: condition.clone(),
+                                                        },
+                                                    );
+                                                }
                                             });
-                                            row.col(|ui| if ui.button("Edit").clicked() {});
                                         })
                                     }
                                 });
                         });
                     });
-
                     ui.end_row();
+                });
+
+                ui.separator();
+
+                ui.horizontal(|ui| {
+                    ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                        ui.set_enabled(apply_save_cancel_enable);
+                        if ui.button("Save").clicked() {
+                            ev_save.send(trigger::Save { index });
+                        };
+                        if ui.button("Apply").clicked() {
+                            ev_write_back.send(trigger::WriteBack { index });
+                        };
+                        if ui.button("Cancel").clicked() {
+                            ev_unselect.send(trigger::Unselect { index });
+                        };
+                    })
                 });
             });
     }
