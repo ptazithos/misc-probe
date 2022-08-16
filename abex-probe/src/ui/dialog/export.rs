@@ -13,7 +13,7 @@ pub fn export_dialog(
     scenario: Res<Scenario>,
 ) {
     if ui_state.export {
-        egui::Window::new("File")
+        egui::Window::new("Export")
             .title_bar(false)
             .resizable(false)
             .show(content.ctx_mut(), |ui| {

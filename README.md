@@ -11,7 +11,7 @@ A GUI program copies triggers from one to another.
 ### Abex Probe
 [[aoe2-probe](https://github.com/ptazithos/aoe2-probe) + [bevy](https://github.com/bevyengine/bevy) + [bevy-egui](https://github.com/mvlabat/bevy_egui)]\
 A simple scenario viewer. 
-
+![image info](./resources/screenshot.png)
 
 ## Getting Started
 Run applications with following commands:
