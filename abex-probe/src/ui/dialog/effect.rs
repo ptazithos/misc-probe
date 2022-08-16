@@ -31,7 +31,17 @@ pub fn effect_dialog(
                 ui.separator();
 
                 ui.label(format!("Type: {}", effect_scheme.name));
-                for &attr in &effect_scheme.attrs {
+                let mut attrs = effect_scheme.attrs.clone();
+                if effect_scheme.name == "MODIFY_ATTRIBUTE" {
+                    let object_attributes_id = *effect.get_by_path("object_attributes").try_i32();
+                    if object_attributes_id != 8 && object_attributes_id != 9 {
+                        let index = attrs.iter().position(|&value| value == "class").unwrap();
+
+                        attrs.remove(index);
+                    }
+                }
+
+                for &attr in &attrs {
                     match attr {
                         "message" | "sound_name" => {
                             ui.horizontal(|ui| {
@@ -63,8 +73,10 @@ pub fn effect_dialog(
                         }
                         "class" | "quantity" => {
                             let ref_value = effect.get_by_path_mut(attr).try_mut_i16();
-                            ui.label(attr);
-                            ui.add(egui::DragValue::new(ref_value));
+                            ui.horizontal(|ui| {
+                                ui.label(attr);
+                                ui.add(egui::DragValue::new(ref_value));
+                            });
                         }
                         "object_attributes" => {
                             let attr_id = effect.get_by_path_mut(attr).try_mut_i32();
@@ -128,6 +140,7 @@ pub fn effect_dialog(
                         _ => {
                             ui.horizontal(|ui| {
                                 let ref_value = effect.get_by_path_mut(attr).try_mut_i32();
+
                                 ui.label(attr);
                                 ui.add(egui::DragValue::new(ref_value));
                             });

@@ -4,7 +4,7 @@ mod menu_bar;
 mod watch;
 
 use aoe2_probe::ExportFormat;
-use bevy::prelude::{ParallelSystemDescriptorCoercion, Plugin, SystemSet};
+use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use dialog::file_dialog;
 use menu_bar::menu_bar;
