@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use aoe2_probe::{EffectTweak, Scenario};
+use aoe2_probe::{prebuilt::ATTR_MAP, AttrTweak, EffectTweak, Scenario};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
@@ -65,6 +65,65 @@ pub fn effect_dialog(
                             let ref_value = effect.get_by_path_mut(attr).try_mut_i16();
                             ui.label(attr);
                             ui.add(egui::DragValue::new(ref_value));
+                        }
+                        "object_attributes" => {
+                            let attr_id = effect.get_by_path_mut(attr).try_mut_i32();
+                            let content =
+                                AttrTweak::translate(attr_id, scenario.version()).unwrap();
+
+                            ui.horizontal(|ui| {
+                                ui.label("Object attributes:");
+
+                                egui::ComboBox::from_id_source(format!(
+                                    "{}-{}-effect-{}",
+                                    index.0, index.1, attr_id
+                                ))
+                                .selected_text(format!("{}", content))
+                                .show_ui(ui, |ui| {
+                                    ui.set_width(240.0);
+                                    for (&key, &value) in ATTR_MAP.iter() {
+                                        ui.selectable_value(attr_id, key, value);
+                                    }
+                                });
+                            });
+                        }
+                        "trigger_id" => {
+                            let ref_value = effect.get_by_path_mut(attr).try_mut_i32();
+                            ui.label(attr);
+                            let mut content = String::from("");
+
+                            let triggers: Vec<(i32, &String)> = scenario
+                                .versio
+                                .get_by_path("triggers/trigger_data")
+                                .try_vec()
+                                .iter()
+                                .enumerate()
+                                .map(|(key, token)| {
+                                    if key as i32 == *ref_value {
+                                        content = token
+                                            .get_by_path("trigger_name")
+                                            .try_str32()
+                                            .content()
+                                            .clone();
+                                    }
+                                    (
+                                        key as i32,
+                                        token.get_by_path("trigger_name").try_str32().content(),
+                                    )
+                                })
+                                .collect();
+
+                            egui::ComboBox::from_id_source(format!(
+                                "{}-{}-effect-{}",
+                                index.0, index.1, attr
+                            ))
+                            .selected_text(format!("{}", content))
+                            .show_ui(ui, |ui| {
+                                ui.set_width(240.0);
+                                for (key, value) in triggers.iter() {
+                                    ui.selectable_value(ref_value, *key, value.clone());
+                                }
+                            });
                         }
                         _ => {
                             ui.horizontal(|ui| {

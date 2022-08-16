@@ -88,7 +88,11 @@ impl eframe::App for SinglePageApp {
 
                             tx.send(0.5 + 0.5 * (index as f64 / len as f64)).unwrap();
                         }
-                        dst.to_file("./temp.aoe2scenario");
+                        dst.to_file(
+                            "./temp.aoe2scenario",
+                            aoe2_probe::ExportFormat::AoE2Scenario,
+                        )
+                        .unwrap();
                         tx.send(1.0).unwrap();
                     });
                 }

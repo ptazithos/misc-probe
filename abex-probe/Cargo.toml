@@ -10,5 +10,5 @@ bevy = {version="0.8", features=["wayland"]}
 bevy_egui = "0.15"
 egui_extras = "0.18.0"
 rfd = "0.10.0"
-aoe2-probe = "0.2.14"
+aoe2-probe = "0.2.15"
 crossbeam-channel = "0.5"
