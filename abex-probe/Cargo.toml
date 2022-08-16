@@ -12,3 +12,5 @@ egui_extras = "0.18.0"
 rfd = "0.10.0"
 aoe2-probe = {git="https://github.com/ptazithos/aoe2-probe", branch = "main" }
 crossbeam-channel = "0.5"
+bevy_fluent = "0.4.0"
+locale_config = "0.3.0"
