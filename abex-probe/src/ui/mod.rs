@@ -22,26 +22,15 @@ impl Plugin for UIPlugin {
             .add_system_set(
                 SystemSet::on_enter(LoadState::NotYet).with_system(watch::enter_not_yet),
             )
-            .add_system_set(SystemSet::on_enter(LoadState::Loaded).with_system(watch::enter_loaded))
             .add_system_set(
                 SystemSet::on_update(LoadState::Loaded)
-                    .with_system(dialog::triggers_dialog.after(menu_bar)),
-            )
-            .add_system_set(
-                SystemSet::on_update(LoadState::Loaded)
-                    .with_system(dialog::trigger_dialog.after(menu_bar)),
-            )
-            .add_system_set(
-                SystemSet::on_update(LoadState::Loaded)
-                    .with_system(dialog::effect_dialog.after(menu_bar)),
-            )
-            .add_system_set(
-                SystemSet::on_update(LoadState::Loaded)
-                    .with_system(dialog::condition_dialog.after(menu_bar)),
-            )
-            .add_system_set(
-                SystemSet::on_update(LoadState::Loaded)
-                    .with_system(dialog::export_dialog.after(menu_bar)),
+                    .with_system(watch::enter_loaded)
+                    .after(menu_bar)
+                    .with_system(dialog::export_dialog)
+                    .with_system(dialog::condition_dialog)
+                    .with_system(dialog::effect_dialog)
+                    .with_system(dialog::trigger_dialog)
+                    .with_system(dialog::triggers_dialog),
             );
     }
 }
