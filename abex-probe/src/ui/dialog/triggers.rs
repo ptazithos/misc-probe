@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
+use bevy_fluent::Localization;
 use egui_extras::{Size, TableBuilder};
 
 use super::UIState;
@@ -13,6 +14,7 @@ pub fn triggers_dialog(
     ui_state: Res<UIState>,
     scenario: Res<Scenario>,
     mut selected_trigger: ResMut<HashMap<usize, trigger::Record>>,
+    localization: Res<Localization>,
 ) {
     if ui_state.triggers {
         egui::Window::new("triggers-dialog")

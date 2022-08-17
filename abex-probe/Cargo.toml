@@ -14,3 +14,4 @@ aoe2-probe = {git="https://github.com/ptazithos/aoe2-probe", branch = "main" }
 crossbeam-channel = "0.5"
 bevy_fluent = "0.4.0"
 locale_config = "0.3.0"
+unic-langid = "0.9.0"
