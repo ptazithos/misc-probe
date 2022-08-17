@@ -1,0 +1,6 @@
+(
+    locale: "zh-CN",
+    resources: [
+        "ui.ftl",
+    ]
+)

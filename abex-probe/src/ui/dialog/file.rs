@@ -4,11 +4,13 @@ use bevy_egui::{
     egui::{self, Button, ProgressBar},
     EguiContext,
 };
+use bevy_fluent::{Content, Localization};
 
 pub fn file_dialog(
     mut content: ResMut<EguiContext>,
     mut ui_state: ResMut<UIState>,
     mut scenario_state: ResMut<State<LoadState>>,
+    localization: Res<Localization>,
 ) {
     if ui_state.file.show {
         egui::Window::new("File")
@@ -16,11 +18,18 @@ pub fn file_dialog(
             .resizable(false)
             .show(content.ctx_mut(), |ui| {
                 let is_loading = *scenario_state.current() == LoadState::Loading;
-                let load_button_str = if is_loading { "Loading" } else { "Load" };
+                let load_button_str = if is_loading {
+                    localization.content("Loading").unwrap()
+                } else {
+                    localization.content("Load").unwrap()
+                };
 
                 ui.set_enabled(!is_loading);
                 ui.horizontal(|ui| {
-                    ui.label("Src scenario:");
+                    ui.label(format!(
+                        "{}:",
+                        localization.content("Src-Scenario").unwrap()
+                    ));
                     if ui.button("Open file…").clicked() {
                         if let Some(path) = rfd::FileDialog::new()
                             .add_filter("AoE2 Scenario", &["aoe2scenario"])
