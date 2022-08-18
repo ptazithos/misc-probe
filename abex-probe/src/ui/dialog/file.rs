@@ -30,7 +30,10 @@ pub fn file_dialog(
                         "{}:",
                         localization.content("Src-Scenario").unwrap()
                     ));
-                    if ui.button("Open file…").clicked() {
+                    if ui
+                        .button(format!("{}...", localization.content("Open-File").unwrap()))
+                        .clicked()
+                    {
                         if let Some(path) = rfd::FileDialog::new()
                             .add_filter("AoE2 Scenario", &["aoe2scenario"])
                             .pick_file()
@@ -42,7 +45,7 @@ pub fn file_dialog(
 
                 if let Some(picked_path) = &ui_state.file.path_to_src {
                     ui.horizontal(|ui| {
-                        ui.label("Picked file:");
+                        ui.label(format!("{}:", localization.content("Picked-File").unwrap()));
                         ui.monospace(picked_path);
                     });
 

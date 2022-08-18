@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
-use bevy_fluent::Localization;
+use bevy_fluent::{Content, Localization};
 use egui_extras::{Size, TableBuilder};
 
 use super::UIState;
@@ -24,14 +24,25 @@ pub fn triggers_dialog(
                 let versio = &scenario.versio;
 
                 let trigger_version = versio.get_by_path("/triggers/trigger_version").try_f64();
-                ui.label(format!("Trigger version: {}", &trigger_version));
+                ui.label(format!(
+                    "{}: {}",
+                    localization.content("Trigger-Version").unwrap(),
+                    &trigger_version
+                ));
 
                 let number_of_triggers =
                     versio.get_by_path("/triggers/number_of_triggers").try_u32();
-                ui.label(format!("Number of triggers: {}", &number_of_triggers));
+                ui.label(format!(
+                    "{}: {}",
+                    localization.content("Number-Of-Triggers").unwrap(),
+                    &number_of_triggers
+                ));
 
                 let trigger_data = versio.get_by_path("/triggers/trigger_data").try_vec();
-                ui.label("Trigger data:");
+                ui.label(format!(
+                    "{}:",
+                    localization.content("Trigger-Data").unwrap()
+                ));
                 TableBuilder::new(ui)
                     .striped(true)
                     .cell_layout(egui::Layout::left_to_right())
@@ -41,10 +52,10 @@ pub fn triggers_dialog(
                     .resizable(true)
                     .header(20.0, |mut header| {
                         header.col(|ui| {
-                            ui.monospace("Row");
+                            ui.monospace(localization.content("Row").unwrap());
                         });
                         header.col(|ui| {
-                            ui.monospace("Description");
+                            ui.monospace(localization.content("Description").unwrap());
                         });
                         header.col(|_| {});
                     })
@@ -60,7 +71,7 @@ pub fn triggers_dialog(
                                 });
                                 row.col(|ui| {
                                     ui.set_enabled(!selected_trigger.contains_key(&index));
-                                    if ui.button("Edit").clicked() {
+                                    if ui.button(localization.content("Edit").unwrap()).clicked() {
                                         selected_trigger.insert(
                                             index,
                                             trigger::Record {

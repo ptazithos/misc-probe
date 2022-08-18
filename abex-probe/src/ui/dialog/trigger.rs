@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 use aoe2_probe::{ConditionTweak, EffectTweak, Scenario};
 use bevy::prelude::*;
@@ -6,6 +6,7 @@ use bevy_egui::{
     egui::{self, Label},
     EguiContext,
 };
+use bevy_fluent::{Content, Localization};
 use egui_extras::{Size, TableBuilder};
 
 use crate::data::{condition, effect, trigger};
@@ -22,6 +23,7 @@ pub fn trigger_dialog(
     mut ev_unselect: EventWriter<trigger::Unselect>,
     mut ev_write_back: EventWriter<trigger::WriteBack>,
     mut ev_save: EventWriter<trigger::Save>,
+    localization: Res<Localization>,
 ) {
     for (&index, trigger_component) in selected_triggers.iter_mut() {
         if !ui_state.triggers {
@@ -40,14 +42,17 @@ pub fn trigger_dialog(
                         ui.label(name.content());
                         ui.separator();
 
-                        ui.label("Name");
+                        ui.label(localization.content("Name").unwrap());
                         let mut name_str = String::from(name.content());
                         ui.text_edit_singleline(&mut name_str);
                         name.set_content(&name_str);
 
                         let description =
                             trigger.get_by_path_mut("short_description").try_mut_str32();
-                        ui.label("Short description:");
+                        ui.label(format!(
+                            "{}:",
+                            localization.content("Short-Description").unwrap()
+                        ));
                         let mut description_str = String::from(description.content());
                         ui.text_edit_singleline(&mut description_str);
                         description.set_content(&description_str);
@@ -55,27 +60,33 @@ pub fn trigger_dialog(
                         let description = trigger
                             .get_by_path_mut("trigger_description")
                             .try_mut_str32();
-                        ui.label("Trigger description:");
+                        ui.label(format!(
+                            "{}:",
+                            localization.content("Trigger-Description").unwrap()
+                        ));
                         let mut description_str = String::from(description.content());
                         ui.text_edit_singleline(&mut description_str);
                         description.set_content(&description_str);
 
                         ui.horizontal(|ui| {
-                            ui.label("Enable:");
+                            ui.label(format!("{}:", localization.content("Enable").unwrap()));
                             let value = trigger.get_by_path_mut("enabled").try_mut_u32();
                             ui.selectable_value(value, 1, "True");
                             ui.selectable_value(value, 0, "False");
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Looping:");
+                            ui.label(format!("{}:", localization.content("Looping").unwrap()));
                             let value = trigger.get_by_path_mut("looping").try_mut_i8();
                             ui.selectable_value(value, 1, "True");
                             ui.selectable_value(value, 0, "False");
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Description string table id:");
+                            ui.label(format!(
+                                "{}:",
+                                localization.content("Description-String-Table-ID").unwrap()
+                            ));
                             let table_id = trigger
                                 .get_by_path_mut("description_string_table_id")
                                 .try_mut_i32();
@@ -83,7 +94,10 @@ pub fn trigger_dialog(
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Display as objective:");
+                            ui.label(format!(
+                                "{}:",
+                                localization.content("Display-As-Object").unwrap()
+                            ));
                             let value =
                                 trigger.get_by_path_mut("display_as_objective").try_mut_u8();
                             ui.selectable_value(value, 1, "True");
@@ -94,7 +108,10 @@ pub fn trigger_dialog(
                             *trigger.get_by_path_mut("display_as_objective").try_mut_u8();
                         ui.horizontal(|ui| {
                             ui.set_enabled(display_as_objective == 1);
-                            ui.label("Objective description order:");
+                            ui.label(format!(
+                                "{}:",
+                                localization.content("Objective-Description-Order").unwrap()
+                            ));
                             let table_id = trigger
                                 .get_by_path_mut("objective_description_order")
                                 .try_mut_u32();
@@ -102,14 +119,19 @@ pub fn trigger_dialog(
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Make header:");
+                            ui.label(format!("{}:", localization.content("Make-Header").unwrap()));
                             let value = trigger.get_by_path_mut("make_header").try_mut_u8();
                             ui.selectable_value(value, 1, "True");
                             ui.selectable_value(value, 0, "False");
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Short description string table id");
+                            ui.label(format!(
+                                "{}:",
+                                localization
+                                    .content("Short-Description-String-Table-ID")
+                                    .unwrap()
+                            ));
                             let value = trigger
                                 .get_by_path_mut("short_description_string_table_id")
                                 .try_mut_i32();
@@ -117,14 +139,20 @@ pub fn trigger_dialog(
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Display on screen:");
+                            ui.label(format!(
+                                "{}:",
+                                localization.content("Display-On-Screen").unwrap()
+                            ));
                             let value = trigger.get_by_path_mut("display_on_screen").try_mut_u8();
                             ui.selectable_value(value, 1, "True");
                             ui.selectable_value(value, 0, "False");
                         });
 
                         ui.horizontal(|ui| {
-                            ui.label("Mute objectives:");
+                            ui.label(format!(
+                                "{}:",
+                                localization.content("Mute-Objectives").unwrap()
+                            ));
                             let value = trigger.get_by_path_mut("mute_objectives").try_mut_u8();
                             ui.selectable_value(value, 1, "True");
                             ui.selectable_value(value, 0, "False");
