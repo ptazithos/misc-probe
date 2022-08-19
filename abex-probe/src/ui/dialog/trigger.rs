@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::format};
+use std::collections::HashMap;
 
 use aoe2_probe::{ConditionTweak, EffectTweak, Scenario};
 use bevy::prelude::*;
@@ -160,12 +160,16 @@ pub fn trigger_dialog(
                     });
 
                     ui.vertical(|ui| {
-                        ui.label("Effects");
+                        ui.label(localization.content("Effects").unwrap());
                         ui.separator();
 
                         ui.horizontal(|ui| {
                             let value = trigger.get_by_path("number_of_effects").try_i32();
-                            ui.label(format!("Number of effects: {}", value));
+                            ui.label(format!(
+                                "{}: {}",
+                                localization.content("Number-Of-Effects").unwrap(),
+                                value
+                            ));
                         });
 
                         let effect_data = trigger.get_by_path_mut("effect_data").try_mut_vec();
@@ -179,10 +183,10 @@ pub fn trigger_dialog(
                                 .column(Size::initial(40.0).at_least(40.0))
                                 .header(20.0, |mut header| {
                                     header.col(|ui| {
-                                        ui.monospace("Row");
+                                        ui.monospace(localization.content("Row").unwrap());
                                     });
                                     header.col(|ui| {
-                                        ui.monospace("Descriptions");
+                                        ui.monospace(localization.content("Description").unwrap());
                                     });
                                     header.col(|_| {});
                                 })
@@ -218,7 +222,10 @@ pub fn trigger_dialog(
                                                 apply_save_cancel_enable =
                                                     apply_save_cancel_enable && !selected;
                                                 ui.set_enabled(!selected);
-                                                if ui.button("Edit").clicked() {
+                                                if ui
+                                                    .button(localization.content("Edit").unwrap())
+                                                    .clicked()
+                                                {
                                                     selected_effects.insert(
                                                         (index, effect_index),
                                                         effect::Record {
@@ -234,12 +241,16 @@ pub fn trigger_dialog(
                     });
 
                     ui.vertical(|ui| {
-                        ui.label("Conditions:");
+                        ui.label(localization.content("Conditions").unwrap());
                         ui.separator();
 
                         ui.horizontal(|ui| {
                             let value = trigger.get_by_path("number_of_conditions").try_i32();
-                            ui.label(format!("Number of conditions: {}", value));
+                            ui.label(format!(
+                                "{}: {}",
+                                localization.content("Number-Of-Conditions").unwrap(),
+                                value
+                            ));
                         });
 
                         let condition_data =
@@ -254,10 +265,10 @@ pub fn trigger_dialog(
                                 .column(Size::initial(40.0).at_least(40.0))
                                 .header(20.0, |mut header| {
                                     header.col(|ui| {
-                                        ui.monospace("Row");
+                                        ui.monospace(localization.content("Row").unwrap());
                                     });
                                     header.col(|ui| {
-                                        ui.monospace("Description");
+                                        ui.monospace(localization.content("Description").unwrap());
                                     });
                                     header.col(|_| {});
                                 })
@@ -296,7 +307,10 @@ pub fn trigger_dialog(
                                                 apply_save_cancel_enable =
                                                     apply_save_cancel_enable && !selected;
                                                 ui.set_enabled(!selected);
-                                                if ui.button("Edit").clicked() {
+                                                if ui
+                                                    .button(localization.content("Edit").unwrap())
+                                                    .clicked()
+                                                {
                                                     selected_conditions.insert(
                                                         (index, condition_index),
                                                         condition::Record {
