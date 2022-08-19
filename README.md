@@ -8,7 +8,7 @@ Several mini-applications built on top of [aoe2-probe](https://github.com/ptazit
 [[aoe2-probe](https://github.com/ptazithos/aoe2-probe) + [egui](https://github.com/emilk/egui)]\
 A GUI program copies triggers from one to another.
 
-![Trigger thief](./resources/screeenshot-1.png)
+![Trigger thief](./resources/screenshot-1.png)
 
 ### Abex Probe
 [[aoe2-probe](https://github.com/ptazithos/aoe2-probe) + [bevy](https://github.com/bevyengine/bevy) + [bevy-egui](https://github.com/mvlabat/bevy_egui)]\
