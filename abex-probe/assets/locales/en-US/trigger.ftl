@@ -10,3 +10,8 @@ Make-Header = Make header
 Short-Description-String-Table-ID = Short description string table id
 Display-On-Screen = Display on screen
 Mute-Objectives = Mute objectives
+
+Effects = Effects
+Number-Of-Effects = Number of effects
+Conditions = Conditions
+Number-Of-Conditions = Number of conditions
